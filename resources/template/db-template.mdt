@@ -1,0 +1,16 @@
+
+
+# 数据库`{{ db.name }}`
+
+- 字符集：{{ db.charset }}
+{% for tb in db.tables %}
+## {{ loop.index }}. {% if tb.comment %}**{{ tb.comment }}**{% endif %}`{{ tb.name }}`
+
+- 表引擎：{{ tb.engine }}
+
+| 字段名 | 类型 | 是否可空 | 是否自增 | 索引类型 | 默认值 | 描述 |
+| :----- | :--- | :------- | :------- | :------- | :----- | :--- |
+{% for fl in tb.fields %}| {{ fl.name }} | {{ fl.type_str() }} | {{ fl.null_flag_str() }} | {{ fl.auto_inc_str() }} | {{ fl.index_flag_str() }} | {{ fl.default_str() }} | {{ fl.comment_str() }} |
+{% endfor %}
+
+{% endfor %}
