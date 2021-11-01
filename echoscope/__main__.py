@@ -13,6 +13,8 @@ from echoscope.model import config_model
 from echoscope.source import source, mysql_source, clickhouse_source
 from echoscope.generate import generate, markdown_generate
 
+from clickhouse_driver import Client, connect
+
 # 源数据导出map
 __source_map: Dict[str, source.Source] = {}
 
@@ -91,3 +93,15 @@ def main():
 
 
 main()
+
+
+# conn = connect('clickhouse://default:123456@10.0.3.94:9000/system')
+
+# # client = Client(host='10.0.3.94', port=8123, user='default', password='123456')
+
+
+# cursor = conn.cursor()
+
+# cursor.execute('select version() as ver;')
+# yz = cursor.fetchall()
+# print(yz)

@@ -115,7 +115,7 @@ class FieldModel(object):
     """
     if None == self.comment:
       return ''
-    return self.comment.replace('|', '\|').replace('\n', '<br />')
+    return self.comment.replace('|', '\|').replace('\r\n', '<br />').replace('\n', '<br />')
 
   def __repr__(self):
     """返回一个对象的描述信息"""

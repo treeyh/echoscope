@@ -20,17 +20,15 @@ class ClickhouseSource(source.Source):
         host=conf.host, port=conf.port, user=conf.user, passwd=conf.passwd, db=conf.db, charset=conf.charset)
 
     ver = self.get_db_version(clickhouseUtil)
-    print('============================')
-    print(ver)
     if ver == '':
       logging.error(' clickhouse conn fail. ')
       return
     dsm = ds_model.DataSourceModel(
         name='%s:%d' % (conf.host, conf.port), dbType=config.DsClickHouse, version=ver)
 
-    dsm.dbs = self.get_export_dbs(mysqlUtil, conf.includes, conf.excludes)
+    dsm.dbs = self.get_export_dbs(clickhouseUtil, conf.includes, conf.excludes)
 
-    dsm = self.fill_table_fields(mysqlUtil, dsm)
+    dsm = self.fill_table_fields(clickhouseUtil, dsm)
 
     return dsm
 
@@ -45,7 +43,7 @@ class ClickhouseSource(source.Source):
     """
     sql = 'select version() as ver;'
     cols = ['ver']
-    ver = conn.find_one(sql, (), cols)
+    ver = conn.find_one(sql, None, cols)
 
     return '' if ver == None else str_util.format_bytes_to_str(ver.get('ver', ''))
 
@@ -60,13 +58,13 @@ class ClickhouseSource(source.Source):
     Returns:
         List[ds_model.DbModel]: 需要导出的数据库列表
     """
-    sql = 'select SCHEMA_NAME AS db_name, DEFAULT_CHARACTER_SET_NAME as charset, DEFAULT_COLLATION_NAME as collation_name from `information_schema`.SCHEMATA '
-    cols = ['db_name', 'charset', 'collation_name']
-    data = conn.find_all(sql, (), cols)
+    sql = 'select name, engine from `system`.databases '
+    cols = ['name', 'engine']
+    data = conn.find_all(sql, None, cols)
     dbs = []
 
     for d in data:
-      db_name = str_util.format_bytes_to_str(d['db_name'])
+      db_name = str_util.format_bytes_to_str(d['name'])
       if db_name in self.excludesDb or db_name in excludes:
         # 需要过滤
         continue
@@ -74,8 +72,8 @@ class ClickhouseSource(source.Source):
         # 不包含在include中
         continue
 
-      charset = str_util.format_bytes_to_str(d['charset'])
-      collation_name = str_util.format_bytes_to_str(d['collation_name'])
+      charset = ''
+      collation_name = ''
       dbModel = ds_model.DbModel(
           name=db_name, charset=charset, collation_name=collation_name)
       dbs.append(dbModel)
@@ -92,22 +90,23 @@ class ClickhouseSource(source.Source):
     Returns:
         ds_model.DataSourceModel: 数据源
     """
-    sql = ''' select TABLE_NAME, `ENGINE`, TABLE_COLLATION, TABLE_COMMENT from information_schema.`TABLES` where TABLE_SCHEMA = %s and TABLE_TYPE = 'BASE TABLE' '''
-    cols = ['TABLE_NAME', 'ENGINE', 'TABLE_COLLATION', 'TABLE_COMMENT']
+    sql = ''' select database , name , engine , create_table_query , engine_full , partition_key , sorting_key , primary_key , total_rows , total_bytes , comment from `system`.tables  WHERE  database  = %(dbName)s '''
+    cols = ['database', 'name', 'engine', 'create_table_query', 'engine_full',
+            'partition_key', 'sorting_key', 'primary_key', 'total_rows', 'total_bytes', 'comment']
 
     for db in dsModel.dbs:
-      data = conn.find_all(sql, (db.name, ), cols)
+      data = conn.find_all(sql, {'dbName': db.name}, cols)
       tables: ds_model.TableModel = []
       for d in data:
-        tableName = str_util.format_bytes_to_str(d['TABLE_NAME'])
-        comment = str_util.format_bytes_to_str(d['TABLE_COMMENT'])
-        collation_name = str_util.format_bytes_to_str(d['TABLE_COLLATION'])
-        engine = str_util.format_bytes_to_str(d['ENGINE'])
+        tableName = str_util.format_bytes_to_str(d['name'])
+        comment = str_util.format_bytes_to_str(d['comment'])
+        collation_name = ''
+        engine = str_util.format_bytes_to_str(d['engine'])
+        create_script = self.get_create_script(conn, db.name, tableName)
         table = ds_model.TableModel(
-            name=tableName, comment=comment, collation_name=collation_name, engine=engine)
+            name=tableName, comment=comment, collation_name=collation_name, engine=engine, create_script=create_script)
         logging.info('load table:%s fields.' % tableName)
         table.fields = self.get_fields(conn, db.name, tableName)
-        table.create_script = self.get_create_script(conn, db.name, tableName)
         tables.append(table)
       db.tables = tables
 
@@ -124,10 +123,11 @@ class ClickhouseSource(source.Source):
     Returns:
         str: 创建脚本
     """
-    sql = ''' SHOW CREATE TABLE `%s`.`%s` ''' % (dbName, tableName)
-    cols = ['Table', 'Create Table']
-    data = conn.find_one(sql, (), cols)
-    return '' if data == None else str_util.format_bytes_to_str(data.get('Create Table', ''))
+    sql = ''' SHOW CREATE TABLE %(dbName)s.%(tableName)s ''' % {
+        'dbName': dbName, 'tableName': tableName}
+    cols = ['statement']
+    data = conn.find_one(sql, None, cols)
+    return '' if data == None else str_util.format_bytes_to_str(data.get('statement', ''))
 
   def get_fields(self, conn: clickhouse_util.ClickhouseUtil, dbName: str, tableName: str) -> List[ds_model.FieldModel]:
     """获取数据表中列信息
@@ -140,44 +140,30 @@ class ClickhouseSource(source.Source):
     Returns:
         List[ds_model.FieldModel]: 列列表
     """
-    sql = ''' select TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE,  CHARACTER_SET_NAME, COLLATION_NAME, COLUMN_TYPE, COLUMN_KEY, EXTRA, COLUMN_COMMENT   from information_schema.`columns` where TABLE_SCHEMA = %s and TABLE_NAME = %s ORDER BY TABLE_SCHEMA DESC, TABLE_NAME DESC, ORDINAL_POSITION ASC '''
-    cols = ['TABLE_SCHEMA', 'TABLE_NAME', 'COLUMN_NAME', 'ORDINAL_POSITION', 'COLUMN_DEFAULT',
-            'IS_NULLABLE', 'DATA_TYPE', 'CHARACTER_MAXIMUM_LENGTH', 'NUMERIC_PRECISION', 'NUMERIC_SCALE',
-            'CHARACTER_SET_NAME', 'COLLATION_NAME', 'COLUMN_TYPE', 'COLUMN_KEY', 'EXTRA', 'COLUMN_COMMENT']
+    sql = ''' select database , `table` , name , `type` , `position`, default_expression, comment ,  is_in_partition_key , is_in_sorting_key , is_in_primary_key , is_in_sampling_key from `system`.columns c where database = %(dbName)s and `table` = %(tableName)s ORDER BY `position` ASC  '''
+    cols = ['database', 'table', 'name', 'type', 'position', 'default_expression', 'comment',
+            'is_in_partition_key', 'is_in_sorting_key', 'is_in_primary_key', 'is_in_sampling_key']
 
-    data = conn.find_all(sql, (dbName, tableName, ), cols)
+    data = conn.find_all(sql, {'dbName': dbName, 'tableName': tableName}, cols)
 
     fields = []
     for d in data:
-      fname = str_util.format_bytes_to_str(d['COLUMN_NAME'])
-      ftype = str_util.format_bytes_to_str(d['DATA_TYPE'])
-      length = str_util.format_bytes_to_str(
-          d['CHARACTER_MAXIMUM_LENGTH']) if d['CHARACTER_MAXIMUM_LENGTH'] != None else str_util.format_bytes_to_str(d['NUMERIC_PRECISION'])
-      scale = str_util.format_bytes_to_str(d['NUMERIC_SCALE'])
+      fname = str_util.format_bytes_to_str(d['name'])
+      ftype = str_util.format_bytes_to_str(d['type'])
+      length = None
+      scale = None
       # on update CURRENT_TIMESTAMP
-      default = str_util.format_bytes_to_str(d['COLUMN_DEFAULT'])
-      ext = str_util.format_bytes_to_str(d['EXTRA'])
-      if default == 'CURRENT_TIMESTAMP':
-        if 'on update CURRENT_TIMESTAMP' in ext:
-          default = 'update_time'
-        else:
-          default = 'create_time'
-      nullFlag = str_util.format_bytes_to_str(d['IS_NULLABLE'])
-      comment = str_util.format_bytes_to_str(d['COLUMN_COMMENT'])
-      charset = str_util.format_bytes_to_str(d['CHARACTER_SET_NAME'])
-      collation_name = str_util.format_bytes_to_str(d['COLLATION_NAME'])
+      default = str_util.format_bytes_to_str(d['default_expression'])
+      nullFlag = False
+      comment = str_util.format_bytes_to_str(d['comment'])
+      charset = ''
+      collation_name = ''
       indexFlag = 0
-      column_key = str_util.format_bytes_to_str(d['COLUMN_KEY'])
-      if column_key == 'PRI':
+      is_in_sorting_key = str_util.format_bytes_to_str(d['is_in_sorting_key'])
+      if is_in_sorting_key == '1':
         indexFlag = 1
-      elif column_key == 'UNI':
-        indexFlag = 3
-      elif column_key == 'MUL':
-        indexFlag = 2
       indexName = ''
       autoInc = False
-      if 'auto_increment' in ext:
-        autoInc = True
 
       field = ds_model.FieldModel(name=fname, ftype=ftype, length=length, scale=scale, default=default, nullFlag=nullFlag,
                                   comment=comment, charset=charset, collation_name=collation_name, indexFlag=indexFlag, indexName=indexName, autoInc=autoInc)

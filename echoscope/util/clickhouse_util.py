@@ -2,7 +2,7 @@
 
 import time
 # pip install clickhouse-connector-python
-from clickhouse_driver import Client
+from clickhouse_driver import connect
 import traceback
 import logging
 
@@ -23,11 +23,14 @@ class ClickhouseUtil(object):
   def _getConnection(self):
     i = 0
     count = 5
+    connUrl = 'clickhouse://%s:%s@%s:%d/%s' % (self.user,
+                                               self.passwd, self.host, self.port, self.db)
+
     while (1):
       try:
         i = i + 1
-        conn = Client(host=self.host, port=self.port, user=self.user,
-                      password=self.passwd, database=self.db)  # , use_unicode=True, charset=self.charset,
+        # , use_unicode=True, charset=self.charset,
+        conn = connect(connUrl)
         return conn
       except BaseException as e:
         logging.error(traceback.format_exc())
@@ -36,12 +39,13 @@ class ClickhouseUtil(object):
           return None
         time.sleep(5)
 
-  def find_one(self, sql, params=(), mapcol=None):
+  def find_one(self, sql, params=None, mapcol=None):
     conn = self._getConnection()
     c = None
     result = None
     try:
-      conn.execute(sql, params)
+      c = conn.cursor()
+      c.execute(sql, params)
       yz = c.fetchone()
       if yz == None:
         return None
@@ -56,13 +60,14 @@ class ClickhouseUtil(object):
       if None != c:
         c.close()
       if None != conn:
-        conn.disconnect()
+        conn.close()
 
-  def find_all(self, sql, params=(), mapcol=None):
+  def find_all(self, sql, params=None, mapcol=None):
     conn = self._getConnection()
     c = None
     try:
-      conn.execute(sql, params)
+      c = conn.cursor()
+      c.execute(sql, params)
       yz = c.fetchall()
       if yz == None:
         return None
@@ -79,7 +84,7 @@ class ClickhouseUtil(object):
       if None != c:
         c.close()
       if None != conn:
-        conn.disconnect()
+        conn.close()
 
   def _result_to_map(self, yz, mapcol):
     if yz == None or mapcol == None:
