@@ -4,6 +4,13 @@
 
 > 生成时间：`{{ setting.nowTime }}`
 
+目录：
+
+{% for tb in db.tables %}- [{{ loop.index }}. {% if tb.comment %}{{ tb.comment }}{% endif %}`{{ tb.name }}`](#{{ loop.index }}-{% if tb.comment %}{{ tb.comment }}{% endif %}{{ tb.name }})
+{% endfor %}
+
+数据库信息：
+
 - 字符集：{{ db.charset }}
 {% for tb in db.tables %}
 ## {{ loop.index }}. {% if tb.comment %}**{{ tb.comment }}**{% endif %}`{{ tb.name }}`
@@ -17,7 +24,7 @@
 {% for fl in tb.fields %}| {{ fl.name }} | {{ fl.type_str() }} | {{ fl.null_flag_str() }} | {{ fl.index_flag_str() }} | {{ fl.default_str() }} | {{ fl.comment_str() }} |
 {% endfor %}
 
-### {{ loop.index }}.2. 建表脚本
+### {{ loop.index }}.2. 创建脚本
 
 ```{{ setting.mdType }}
 {{ tb.create_script }}

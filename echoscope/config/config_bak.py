@@ -30,7 +30,7 @@ SupportDsType = [DsMysql, DsClickHouse]
 # markdown 建表语句类型
 DsMdCreateScriptType = {
     DsMysql: 'sql',
-    DsClickHouse: 'clickhouse'
+    DsClickHouse: 'sql'
 }
 
 # 导出数据类型
