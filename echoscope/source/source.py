@@ -14,7 +14,7 @@ class Source(object):
       object ([type]): [description]
   """
   @abstractmethod
-  def exportModel(self, conf: config_model.DataSourceConfig) -> ds_model.DataSourceModel:
+  def export_model(self, conf: config_model.DataSourceConfig) -> ds_model.DataSourceModel:
     """根据数据源导出模型，需要实现该接口
 
     Args:

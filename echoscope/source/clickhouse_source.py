@@ -3,27 +3,30 @@
 import logging
 from typing import List
 
+
 from echoscope.config import config
-from echoscope.util import mysql_util, str_util, log_util
+from echoscope.util import str_util, log_util, clickhouse_util
 from echoscope.model import ds_model, config_model
 from echoscope.source import source
 
 
-class MysqlSource(source.Source):
+class ClickhouseSource(source.Source):
   def __init__(self):
-    self.excludesDb = ['information_schema', 'performance_schema', 'mysql', 'sys', 'test']
+    self.excludesDb = ['default', 'system']
 
   def export_model(self, conf: config_model.DataSourceConfig) -> ds_model.DataSourceModel:
 
-    mysqlUtil = mysql_util.get_mysql_util(
+    clickhouseUtil = clickhouse_util.get_clickhouse_util(
         host=conf.host, port=conf.port, user=conf.user, passwd=conf.passwd, db=conf.db, charset=conf.charset)
 
-    ver = self.get_db_version(mysqlUtil)
+    ver = self.get_db_version(clickhouseUtil)
+    print('============================')
+    print(ver)
     if ver == '':
-      logging.error(' mysql conn fail. ')
+      logging.error(' clickhouse conn fail. ')
       return
     dsm = ds_model.DataSourceModel(
-        name='%s:%d' % (conf.host, conf.port), dbType=config.DsMysql, version=ver)
+        name='%s:%d' % (conf.host, conf.port), dbType=config.DsClickHouse, version=ver)
 
     dsm.dbs = self.get_export_dbs(mysqlUtil, conf.includes, conf.excludes)
 
@@ -31,26 +34,26 @@ class MysqlSource(source.Source):
 
     return dsm
 
-  def get_db_version(self, conn: mysql_util.MysqlUtil) -> str:
+  def get_db_version(self, conn: clickhouse_util.ClickhouseUtil) -> str:
     """获取mysql版本
 
     Args:
-        conn (mysql_util.MysqlUtil): [description]
+        cursor (clickhouse cursor): [description]
 
     Returns:
         str: [description]
     """
-    sql = 'select version() as ver from dual'
+    sql = 'select version() as ver;'
     cols = ['ver']
     ver = conn.find_one(sql, (), cols)
 
     return '' if ver == None else str_util.format_bytes_to_str(ver.get('ver', ''))
 
-  def get_export_dbs(self, conn: mysql_util.MysqlUtil, includes: List[str] = [], excludes: List[str] = []) -> List[ds_model.DbModel]:
+  def get_export_dbs(self, conn: clickhouse_util.ClickhouseUtil, includes: List[str] = [], excludes: List[str] = []) -> List[ds_model.DbModel]:
     """获取需要导出结构的数据库列表
 
     Args:
-        conn (mysql_util.MysqlUtil): 数据库连接
+        conn (clickhouse_util.ClickhouseUtil): 数据库连接
         includes (List[str], optional): 需要包含的数据库列表. Defaults to [].
         excludes (List[str], optional): 需要排除的数据库列表. Defaults to [].
 
@@ -79,11 +82,11 @@ class MysqlSource(source.Source):
 
     return dbs
 
-  def fill_table_fields(self, conn: mysql_util.MysqlUtil, dsModel: ds_model.DataSourceModel) -> ds_model.DataSourceModel:
+  def fill_table_fields(self, conn: clickhouse_util.ClickhouseUtil, dsModel: ds_model.DataSourceModel) -> ds_model.DataSourceModel:
     """获取数据库中的表信息
 
     Args:
-        conn (mysql_util.MysqlUtil): 数据库连接
+        conn (clickhouse_util.ClickhouseUtil): 数据库连接
         dsModel (ds_model.DataSourceModel): 数据源，包含数据库列表
 
     Returns:
@@ -110,11 +113,11 @@ class MysqlSource(source.Source):
 
     return dsModel
 
-  def get_create_script(self, conn: mysql_util.MysqlUtil, dbName: str, tableName: str) -> str:
+  def get_create_script(self, conn: clickhouse_util.ClickhouseUtil, dbName: str, tableName: str) -> str:
     """获取表的创建脚本
 
     Args:
-        conn (mysql_util.MysqlUtil): 数据库连接
+        conn (clickhouse_util.ClickhouseUtil): 数据库连接
         dbName (str): 数据库名称
         tableName (str): 表名称
 
@@ -126,11 +129,11 @@ class MysqlSource(source.Source):
     data = conn.find_one(sql, (), cols)
     return '' if data == None else str_util.format_bytes_to_str(data.get('Create Table', ''))
 
-  def get_fields(self, conn: mysql_util.MysqlUtil, dbName: str, tableName: str) -> List[ds_model.FieldModel]:
+  def get_fields(self, conn: clickhouse_util.ClickhouseUtil, dbName: str, tableName: str) -> List[ds_model.FieldModel]:
     """获取数据表中列信息
 
     Args:
-        conn (mysql_util.MysqlUtil): 数据库连接
+        conn (clickhouse_util.ClickhouseUtil): 数据库连接
         dbName (str): 数据库名
         tableName (str): 表名
 

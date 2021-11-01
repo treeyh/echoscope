@@ -76,6 +76,8 @@ atlassian-ide-plugin.xml
 /export/*
 !/export/README.md
 
+/echoscope/config/config.py
+
 *.go
 
 */__pycache__

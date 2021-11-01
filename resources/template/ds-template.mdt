@@ -1,7 +1,9 @@
 
 # {{ conf.name }}
 
-## 基础信息
+> 生成时间：`{{ setting.nowTime }}`
+
+## 1. 基础信息
 
 - 数据库类型：{{ ds.dbType }}
 - 数据库host：{{ conf.host }}
@@ -9,7 +11,7 @@
 - 数据库版本：{{ ds.version }}
 - 数据库描述：{{ conf.comment }}
 
-## 数据库列表
+## 2. 数据库列表
 
 {% for db in ds.dbs %}- [{{ db.name }}]({{ conf.dsType }}/{{conf.code}}/{{db.name}}.md)
 {% endfor %}

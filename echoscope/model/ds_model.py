@@ -96,9 +96,16 @@ class FieldModel(object):
     Returns:
         str: [description]
     """
+    defaultStr = ''
+    if self.autoInc:
+      defaultStr += '自增'
+
     if None == self.default:
-      return ''
-    return self.default
+      return defaultStr
+
+    if '' == self.default:
+      return '\'\'' if defaultStr == '' else defaultStr + ', \'\''
+    return self.default if defaultStr == '' else defaultStr + ', ' + self.default
 
   def comment_str(self) -> str:
     """返回默认值str
@@ -122,7 +129,7 @@ class TableModel(object):
       object ([type]): [description]
   """
 
-  def __init__(self, name: str, comment: str = '', collation_name: str = 'utf8', engine: str = '', fields: List[FieldModel] = []):
+  def __init__(self, name: str, comment: str = '', collation_name: str = 'utf8', engine: str = '', fields: List[FieldModel] = [], create_script: str = ''):
     """初始化
 
     Args:
@@ -131,6 +138,7 @@ class TableModel(object):
         collation_name (str, optional): 字符集. Defaults to 'utf8'.
         engine (str, optional): db引擎. Defaults to ''.
         fields (List[FieldModel], optional): 字段列表. Defaults to [].
+        create_script (str, optional): 创建脚本. Defaults to ''.
     """
     super(TableModel, self).__init__()
     self.name = name
@@ -138,10 +146,11 @@ class TableModel(object):
     self.collation_name = collation_name
     self.engine = engine
     self.fields = fields
+    self.create_script = create_script
 
   def __repr__(self):
     """返回一个对象的描述信息"""
-    return "{name:%s, comment:%s, collation_name:%s, engine:%s, fields:%s}" % (self.name, self.comment, self.collation_name, self.engine, self.fields)
+    return "{name:%s, comment:%s, collation_name:%s, engine:%s, fields:%s, create_script:%s}" % (self.name, self.comment, self.collation_name, self.engine, self.fields, self.create_script)
 
 
 class DbModel(object):
@@ -151,7 +160,7 @@ class DbModel(object):
       object ([type]): [description]
   """
 
-  def __init__(self, name: str, comment: str = '', charset: str = 'utf8', collation_name: str = '', tables: List[TableModel] = []):
+  def __init__(self, name: str, comment: str = '', charset: str = 'utf8', collation_name: str = '', tables: List[TableModel] = [], create_script: str = ''):
     """初始化
 
     Args:
@@ -159,7 +168,8 @@ class DbModel(object):
         comment (str, optional): 描述. Defaults to ''.
         charset (str, optional): 字符集. Defaults to 'utf8'.
         collation_name (str, optional): [description]. Defaults to ''.
-        tables (List[TableModel], optional): [description]. Defaults to [].
+        tables (List[TableModel], optional): 表列表. Defaults to [].
+        create_script (str, optional): 创建脚本. Defaults to ''.
     """
     super(DbModel, self).__init__()
     self.name = name
@@ -167,10 +177,11 @@ class DbModel(object):
     self.charset = charset
     self.collation_name = collation_name
     self.tables = tables
+    self.create_script = create_script
 
   def __repr__(self):
     """返回一个对象的描述信息"""
-    return "{name:%s, comment:%s, charset:%s, collation_name:%s, tables:%s}" % (self.name, self.comment, self.charset, self.collation_name, self.tables)
+    return "{name:%s, comment:%s, charset:%s, collation_name:%s, tables:%s, create_script:%s}" % (self.name, self.comment, self.charset, self.collation_name, self.tables, self.create_script)
 
 
 class DataSourceModel(object):

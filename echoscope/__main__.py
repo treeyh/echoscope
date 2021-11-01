@@ -10,7 +10,7 @@ from typing import Dict, List
 from echoscope.util import file_util, log_util
 from echoscope.config import config
 from echoscope.model import config_model
-from echoscope.source import source, mysql_source
+from echoscope.source import source, mysql_source, clickhouse_source
 from echoscope.generate import generate, markdown_generate
 
 # 源数据导出map
@@ -28,10 +28,11 @@ def init():
   file_util.mkdirs(config.LogPath, False)
   log_util.log_init(config.LogPath)
 
-  __source_map['mysql'] = mysql_source.MysqlSource()
+  __source_map[config.DsMysql] = mysql_source.MysqlSource()
+  __source_map[config.DsClickHouse] = clickhouse_source.ClickhouseSource()
 
   mdGenerate = markdown_generate.MarkdownGenerate(config.TemplatePath, config.MarkdownExportPath)
-  __generate_map['markdown'] = mdGenerate
+  __generate_map[config.ExportTypeMarkdown] = mdGenerate
 
 
 def _parse_option():
@@ -60,13 +61,13 @@ def main():
   for dsConfig in config.Config.exportDsConfig:
     logging.info("start generate model file: %s" % dsConfig)
 
-    ds = __source_map[dsConfig.dsType].exportModel(conf=dsConfig)
+    ds = __source_map[dsConfig.dsType].export_model(conf=dsConfig)
     dsConfig.ds = ds
 
-    filePath = __generate_map[options.generate].generateIndexFile(conf=dsConfig, ds=ds)
+    filePath = __generate_map[options.generate].generate_index_file(conf=dsConfig, ds=ds)
     logging.info("generate model index file path: %s" % filePath)
 
-    filePath = __generate_map[options.generate].generateFile(conf=dsConfig, ds=ds)
+    filePath = __generate_map[options.generate].generate_file(conf=dsConfig, ds=ds)
 
     if confMap.get(dsConfig.dsType, None) == None:
       confMap[dsConfig.dsType] = [dsConfig]
@@ -85,7 +86,7 @@ def main():
     print(dsType)
     confss.append(confs)
 
-  __generate_map['markdown'].generateRootIndexFile(confss)
+  __generate_map[config.ExportTypeMarkdown].generate_root_file(confss)
   logging.info("end generate root index file ")
 
 

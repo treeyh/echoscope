@@ -17,9 +17,17 @@ class Generate(object):
   Args:
       object ([type]): [description]
   """
+  @abstractmethod
+  def generate_root_file(self, confss: List[List[config_model.DataSourceConfig]]):
+    """生成根目录下索引页面
+
+    Args:
+        confs (List[config_model.DataSourceConfig]): 数据源列表
+    """
+    pass
 
   @abstractmethod
-  def generateIndexFile(self, conf: config_model.DataSourceConfig, ds: ds_model.DataSourceModel) -> str:
+  def generate_index_file(self, conf: config_model.DataSourceConfig, ds: ds_model.DataSourceModel) -> str:
     """根据数据模型生成索引文件，需要实现该接口
 
     Args:
@@ -32,7 +40,7 @@ class Generate(object):
     pass
 
   @abstractmethod
-  def generateFile(self, conf: config_model.DataSourceConfig, ds: ds_model.DataSourceModel) -> str:
+  def generate_file(self, conf: config_model.DataSourceConfig, ds: ds_model.DataSourceModel) -> str:
     """根据数据模型生成文件，需要实现该接口
 
     Args:
