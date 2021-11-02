@@ -60,7 +60,7 @@ def main():
   confMap: Dict[str, List[config_model.DataSourceConfig]] = {}
 
   # 生成模型文件
-  for dsConfig in config.Config.exportDsConfig:
+  for dsConfig in config.exportDsConfig:
     logging.info("start generate model file: %s" % dsConfig)
 
     ds = __source_map[dsConfig.dsType].export_model(conf=dsConfig)
