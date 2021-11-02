@@ -159,13 +159,16 @@ class ClickhouseSource(source.Source):
       charset = ''
       collation_name = ''
       indexFlag = 0
-      is_in_sorting_key = str_util.format_bytes_to_str(d['is_in_sorting_key'])
-      if is_in_sorting_key == '1':
+      is_in_sorting_key = int(str_util.format_bytes_to_str(d['is_in_sorting_key']))
+      if is_in_sorting_key == 1:
         indexFlag = 1
+      is_in_partition_key = int(str_util.format_bytes_to_str(d['is_in_partition_key']))
+      is_in_primary_key = int(str_util.format_bytes_to_str(d['is_in_primary_key']))
+      is_in_sampling_key = int(str_util.format_bytes_to_str(d['is_in_sampling_key']))
       indexName = ''
       autoInc = False
 
       field = ds_model.FieldModel(name=fname, ftype=ftype, length=length, scale=scale, default=default, nullFlag=nullFlag,
-                                  comment=comment, charset=charset, collation_name=collation_name, indexFlag=indexFlag, indexName=indexName, autoInc=autoInc)
+                                  comment=comment, charset=charset, collation_name=collation_name, indexFlag=indexFlag, indexName=indexName, autoInc=autoInc, in_partition_key_flag=is_in_partition_key, in_sorting_key_flag=is_in_sorting_key, in_primary_key_flag=is_in_primary_key, in_sampling_key_flag=is_in_sampling_key)
       fields.append(field)
     return fields

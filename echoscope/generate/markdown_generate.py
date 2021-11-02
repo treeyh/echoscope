@@ -58,6 +58,7 @@ class MarkdownGenerate(generate.Generate):
         'docTitle': config.DocTitle,
         'mdType': config.DsMdCreateScriptType[conf.dsType],
         'nowTime': date_util.get_now_time(),
+        'tableTitle': self.get_markdown_table_title(conf.dsType),
     }
     dbPath = os.path.join(self.exportPath, conf.dsType, conf.code)
     file_util.mkdirs(dbPath, True)
@@ -108,3 +109,21 @@ class MarkdownGenerate(generate.Generate):
     file_util.write_file(filePath=nojFilePath, content='')
 
     return filePath
+
+  def get_markdown_table_title(self, dsType: str = 'mysql') -> str:
+    """获取markdown标题
+
+    Args:
+        dsType (str, optional): 数据源类型. Defaults to 'mysql'.
+
+    Returns:
+        str: [description]
+    """
+    if dsType == config.DsMysql:
+      # mysql
+      return '| 字段名 | 类型 | 是否可空 | 索引类型 | 默认值 | 描述 |\n| :----- | :--- | :------- | :------- | :----- | :--- |'
+    elif dsType == config.DsClickHouse:
+      # clickhouse
+      return '| 字段名 | 类型 | 默认值 | 分区key | 排序key | 主键key | 描述 |\n| :----- | :--- | :------- | :------- | :----- | :--- | :--- |'
+
+    return ''
