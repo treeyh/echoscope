@@ -190,6 +190,14 @@ class TableModel(object):
     """返回一个对象的描述信息"""
     return "{name:%s, comment:%s, collation_name:%s, engine:%s, fields:%s, create_script:%s}" % (self.name, self.comment, self.collation_name, self.engine, self.fields, self.create_script)
 
+  def link_comment(self):
+    """输出表名目录跳转链接
+
+    Returns:
+        [type]: [description]
+    """
+    return self.comment.replace(' ', '-')
+
 
 class DbModel(object):
   """数据库模型

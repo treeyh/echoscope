@@ -6,7 +6,7 @@
 
 目录：
 
-{% for tb in db.tables %}- [{{ loop.index }}. {% if tb.comment %}{{ tb.comment }}{% endif %}{{ tb.name }}](#_{{ loop.index }}-{% if tb.comment %}{{ tb.comment }}-{% endif %}{{ tb.name }})
+{% for tb in db.tables %}- [{{ loop.index }}. {% if tb.comment %}{{ tb.comment }}{% endif %}{{ tb.name }}](#_{{ loop.index }}-{% if tb.comment %}{{ tb.link_comment() }}-{% endif %}{{ tb.name }})
 {% endfor %}
 
 数据库信息：
