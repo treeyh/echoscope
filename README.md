@@ -98,3 +98,11 @@ exportDsConfig: List[config_model.DataSourceConfig] = [
 python3 -m http.server 12004
 
 ```
+
+## 感谢
+
+[Jinja](https://jinja.palletsprojects.com/en/3.0.x/)
+[docsify](https://docsify.js.org/)
+[connector-python](https://dev.mysql.com/doc/connector-python/en/)
+[clickhouse-driver](https://github.com/mymarilyn/clickhouse-driver/)
+
