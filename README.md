@@ -20,13 +20,13 @@ python -m venv ./venv/
 
 # 激活虚拟环境
 # Linux、mac、Unix
-$ source ./bin/activate
+$ source ./venv/bin/activate
 
 # windows cms
-C:> xxx/Scripts/activate.bat
+C:> venv/Scripts/activate.bat
 
 # windows powershell
-PS C:> xxx/Scripts/Activate.ps1
+PS C:> venv/Scripts/Activate.ps1
 
 # 安装依赖
 pip install -r requirements.txt
