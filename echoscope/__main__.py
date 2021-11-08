@@ -30,7 +30,9 @@ def init():
   file_util.mkdirs(config.LogPath, False)
   log_util.log_init(config.LogPath)
 
-  __source_map[config.DsMysql] = mysql_source.MysqlSource()
+  mysqlSource = mysql_source.MysqlSource()
+  __source_map[config.DsMysql] = mysqlSource
+  __source_map[config.DsMariaDB] = mysqlSource
   __source_map[config.DsClickHouse] = clickhouse_source.ClickhouseSource()
 
   mdGenerate = markdown_generate.MarkdownGenerate(config.TemplatePath, config.MarkdownExportPath)
