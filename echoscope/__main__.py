@@ -58,7 +58,6 @@ def main():
   options, args = _parse_option()
 
   shutil.rmtree(path=config.MarkdownExportPath, ignore_errors=True)
-
   confMap: Dict[str, List[config_model.DataSourceConfig]] = {}
 
   # 生成模型文件
