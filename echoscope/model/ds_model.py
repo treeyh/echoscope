@@ -13,12 +13,13 @@ class FieldModel(object):
       object ([type]): [description]
   """
 
-  def __init__(self, name: str, ftype: str, length: int = 0, scale: int = 0, default: str = '', nullFlag: bool = False, comment: str = '', charset: str = '', collation_name: str = '', indexFlag: int = 0, indexName: str = '', autoInc: bool = False, in_partition_key_flag: int = 0, in_sorting_key_flag: int = 0, in_primary_key_flag: int = 0, in_sampling_key_flag: int = 0):
+  def __init__(self, name: str, ftype: str, column_type: str, length: int = 0, scale: int = 0, default: str = '', nullFlag: bool = False, comment: str = '', charset: str = '', collation_name: str = '', indexFlag: int = 0, indexName: str = '', autoInc: bool = False, in_partition_key_flag: int = 0, in_sorting_key_flag: int = 0, in_primary_key_flag: int = 0, in_sampling_key_flag: int = 0):
     """初始化
 
     Args:
         name (str): 名称
         ftype (str): 字段类型
+        column_type (str): 完整字段类型
         length (int, optional): 长度. Defaults to 0.
         scale (int, optional): 小数点后几位. Defaults to 0.
         default (str, optional): 默认值. Defaults to ''.
@@ -37,6 +38,7 @@ class FieldModel(object):
     super(FieldModel, self).__init__()
     self.name = name
     self.ftype = ftype
+    self.column_type = column_type
     self.length = length
     self.scale = scale
     self.default = default
