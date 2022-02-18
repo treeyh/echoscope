@@ -107,6 +107,22 @@ python3 -m http.server 12004
 
 ```
 
+## 生产页面展示
+
+首页:
+
+![首页](https://cdn.jsdelivr.net/gh/treeyh/soc-md/img/md/2022/02/18/1645149913.png)
+
+数据库首页:
+
+![数据源首页](https://cdn.jsdelivr.net/gh/treeyh/soc-md/img/md/2022/02/18/1645149935.png)
+
+数据表页面:
+
+![数据表页面](https://cdn.jsdelivr.net/gh/treeyh/soc-md/img/md/2022/02/18/1645149970.png)
+
+
+
 ## 感谢
 
 [Jinja](https://jinja.palletsprojects.com/en/3.0.x/)
