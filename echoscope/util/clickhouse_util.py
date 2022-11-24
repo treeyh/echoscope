@@ -54,6 +54,9 @@ class ClickhouseUtil(object):
       result = self._result_to_map(yz, mapcol)
       return result
     except BaseException as e:
+      # logging.info(sql)
+      # logging.info(params)
+      # logging.info(mapcol)
       logging.error('Error %d: %s' % (e.args[0], e.args[1]))
       return result
     finally:

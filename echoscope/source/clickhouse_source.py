@@ -90,7 +90,7 @@ class ClickhouseSource(source.Source):
     Returns:
         ds_model.DataSourceModel: 数据源
     """
-    sql = ''' select database , name , engine , create_table_query , engine_full , partition_key , sorting_key , primary_key , total_rows , total_bytes , comment from `system`.tables  WHERE  database  = %(dbName)s '''
+    sql = ''' select `database` , `name` , `engine` , `create_table_query` , `engine_full` , `partition_key` , `sorting_key` , `primary_key` , `total_rows` , `total_bytes` , `comment` from `system`.`tables`  WHERE  `database`  = %(dbName)s '''
     cols = ['database', 'name', 'engine', 'create_table_query', 'engine_full',
             'partition_key', 'sorting_key', 'primary_key', 'total_rows', 'total_bytes', 'comment']
 
@@ -123,7 +123,7 @@ class ClickhouseSource(source.Source):
     Returns:
         str: 创建脚本
     """
-    sql = ''' SHOW CREATE TABLE %(dbName)s.%(tableName)s ''' % {
+    sql = ''' SHOW CREATE TABLE `%(dbName)s`.`%(tableName)s` ''' % {
         'dbName': dbName, 'tableName': tableName}
     cols = ['statement']
     data = conn.find_one(sql, None, cols)
@@ -140,7 +140,7 @@ class ClickhouseSource(source.Source):
     Returns:
         List[ds_model.FieldModel]: 列列表
     """
-    sql = ''' select database , `table` , name , `type` , `position`, default_expression, comment ,  is_in_partition_key , is_in_sorting_key , is_in_primary_key , is_in_sampling_key from `system`.columns c where database = %(dbName)s and `table` = %(tableName)s ORDER BY `position` ASC  '''
+    sql = ''' select database , `table` , `name` , `type` , `position`, `default_expression`, `comment` ,  `is_in_partition_key` , `is_in_sorting_key` , `is_in_primary_key` , `is_in_sampling_key` from `system`.`columns` c where `database` = %(dbName)s and `table` = %(tableName)s ORDER BY `position` ASC  '''
     cols = ['database', 'table', 'name', 'type', 'position', 'default_expression', 'comment',
             'is_in_partition_key', 'is_in_sorting_key', 'is_in_primary_key', 'is_in_sampling_key']
 
@@ -168,7 +168,7 @@ class ClickhouseSource(source.Source):
       indexName = ''
       autoInc = False
 
-      field = ds_model.FieldModel(name=fname, ftype=ftype, length=length, scale=scale, default=default, nullFlag=nullFlag,
+      field = ds_model.FieldModel(name=fname, ftype=ftype, column_type=ftype, length=length, scale=scale, default=default, nullFlag=nullFlag,
                                   comment=comment, charset=charset, collation_name=collation_name, indexFlag=indexFlag, indexName=indexName, autoInc=autoInc, in_partition_key_flag=is_in_partition_key, in_sorting_key_flag=is_in_sorting_key, in_primary_key_flag=is_in_primary_key, in_sampling_key_flag=is_in_sampling_key)
       fields.append(field)
     return fields

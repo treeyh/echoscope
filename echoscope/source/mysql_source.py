@@ -57,7 +57,7 @@ class MysqlSource(source.Source):
     Returns:
         List[ds_model.DbModel]: 需要导出的数据库列表
     """
-    sql = 'select SCHEMA_NAME AS db_name, DEFAULT_CHARACTER_SET_NAME as charset, DEFAULT_COLLATION_NAME as collation_name from `information_schema`.SCHEMATA '
+    sql = 'select `SCHEMA_NAME` AS db_name, `DEFAULT_CHARACTER_SET_NAME` as charset, `DEFAULT_COLLATION_NAME` as collation_name from `information_schema`.`SCHEMATA` '
     cols = ['db_name', 'charset', 'collation_name']
     data = conn.find_all(sql, (), cols)
     dbs = []
@@ -89,7 +89,7 @@ class MysqlSource(source.Source):
     Returns:
         ds_model.DataSourceModel: 数据源
     """
-    sql = ''' select TABLE_NAME, `ENGINE`, TABLE_COLLATION, TABLE_COMMENT from information_schema.`TABLES` where TABLE_SCHEMA = %s and TABLE_TYPE = 'BASE TABLE' '''
+    sql = ''' select `TABLE_NAME`, `ENGINE`, `TABLE_COLLATION`, `TABLE_COMMENT` from `information_schema`.`TABLES` where `TABLE_SCHEMA` = %s and `TABLE_TYPE` = 'BASE TABLE' '''
     cols = ['TABLE_NAME', 'ENGINE', 'TABLE_COLLATION', 'TABLE_COMMENT']
 
     for db in dsModel.dbs:
@@ -137,7 +137,7 @@ class MysqlSource(source.Source):
     Returns:
         List[ds_model.FieldModel]: 列列表
     """
-    sql = ''' select TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE,  CHARACTER_SET_NAME, COLLATION_NAME, COLUMN_TYPE, COLUMN_KEY, EXTRA, COLUMN_COMMENT   from information_schema.`columns` where TABLE_SCHEMA = %s and TABLE_NAME = %s ORDER BY TABLE_SCHEMA DESC, TABLE_NAME DESC, ORDINAL_POSITION ASC '''
+    sql = ''' select `TABLE_SCHEMA`, `TABLE_NAME`, `COLUMN_NAME`, `ORDINAL_POSITION`, `COLUMN_DEFAULT`, `IS_NULLABLE`, `DATA_TYPE`, `CHARACTER_MAXIMUM_LENGTH`, `NUMERIC_PRECISION`, `NUMERIC_SCALE`,  `CHARACTER_SET_NAME`, `COLLATION_NAME`, `COLUMN_TYPE`, `COLUMN_KEY`, `EXTRA`, `COLUMN_COMMENT`   from `information_schema`.`columns` where `TABLE_SCHEMA` = %s and `TABLE_NAME` = %s ORDER BY `TABLE_SCHEMA` DESC, `TABLE_NAME` DESC, `ORDINAL_POSITION` ASC '''
     cols = ['TABLE_SCHEMA', 'TABLE_NAME', 'COLUMN_NAME', 'ORDINAL_POSITION', 'COLUMN_DEFAULT',
             'IS_NULLABLE', 'DATA_TYPE', 'CHARACTER_MAXIMUM_LENGTH', 'NUMERIC_PRECISION', 'NUMERIC_SCALE',
             'CHARACTER_SET_NAME', 'COLLATION_NAME', 'COLUMN_TYPE', 'COLUMN_KEY', 'EXTRA', 'COLUMN_COMMENT']
