@@ -148,7 +148,7 @@ class MysqlSource(source.Source):
     for d in data:
       fname = str_util.format_bytes_to_str(d['COLUMN_NAME'])
       ftype = str_util.format_bytes_to_str(d['DATA_TYPE'])
-      column_type = str_utils.format_bytes_to_str(d['COLUMN_TYPE'])
+      column_type = str_util.format_bytes_to_str(d['COLUMN_TYPE'])
       length = str_util.format_bytes_to_str(
           d['CHARACTER_MAXIMUM_LENGTH']) if d['CHARACTER_MAXIMUM_LENGTH'] != None else str_util.format_bytes_to_str(d['NUMERIC_PRECISION'])
       scale = str_util.format_bytes_to_str(d['NUMERIC_SCALE'])
