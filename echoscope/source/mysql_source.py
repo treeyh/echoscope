@@ -177,7 +177,7 @@ class MysqlSource(source.Source):
       if 'auto_increment' in ext:
         autoInc = True
 
-      field = ds_model.FieldModel(name=fname, ftype=ftype, length=length, scale=scale, default=default, nullFlag=nullFlag,
+      field = ds_model.FieldModel(name=fname, ftype=ftype, column_type=ftype, length=length, scale=scale, default=default, nullFlag=nullFlag,
                                   comment=comment, charset=charset, collation_name=collation_name, indexFlag=indexFlag, indexName=indexName, autoInc=autoInc)
       fields.append(field)
     return fields
