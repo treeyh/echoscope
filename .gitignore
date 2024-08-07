@@ -71,6 +71,7 @@ atlassian-ide-plugin.xml
 
 # Python venv
 /venv
+/.venv
 /dd
 
 /export/*
